@@ -1,0 +1,89 @@
+#!/bin/bash
+
+#
+# Setup
+#
+
+VERSION="0.0.1"
+CLI="SLACK"
+API="https://slack.com/api/"
+CLI_ID="140368165298.140370433538"
+CLI_SECRET="9c850d91fdaa9254d5cf98256a21527b"
+TOKEN="xoxp-140368165298-141059292231-141055462534-0533141eaed3b28120403c9a460d6152"
+input=""
+
+grantAccess(){
+	command curl "${API}oauth.access?client_id=${CLI_ID}&client_secret=${CLI_SECRET}&code=$@";
+}
+
+listChannels(){
+	command curl "${API}channels.list?token=${TOKEN}" | python -c 'import json,sys;obj=json.load(sys.stdin);for i in obj["channels"] print obj["channels"][i]["name"]';
+}
+
+login(){
+	command curl "https://slack.com/api/channels.list?token=xoxp-140368165298-141059292231-141055462534-0533141eaed3b28120403c9a460d6152&pretty=1"
+}
+
+getMessages(){
+	command curl "${API}im.replies?token=${TOKEN}&pretty=1&channel=slackbot"
+}
+
+log_env(){
+	printenv
+}
+
+log_info(){
+	printf "\033[36m$@\033[0m\n";
+}
+
+log_error(){
+	printf "\033[31m$@\033[0m\n";
+}
+
+while [ "$input" != "exit" ]
+do
+	echo -n "$CLI $VERSION > " && read -a input;
+	cmd=""
+	args=""
+	if [ "${#input[@]}" -eq 1 ]; then
+		cmd="${input[0]}"
+	else
+		cmd="${input[0]}"
+		args="${input[1]}";
+	fi;
+	case $cmd in
+		info) log_env ;;
+		login) login ;;
+		list) listChannels ;;
+		messages) getMessages ;;
+		grantaccess) grantAccess "$args";; 
+		*) log_error "no such command" ;;
+	esac;
+	shift
+done
+
+exit 0
+
+
+# print_info(){
+# 	printf "\033[36m$@\033[0m\n";
+# }
+
+# print_error(){
+# 	printf "\033[31m$@\033[0m\n";
+# }
+
+# call_method(){
+# 	#command curl -s -o /dev/null -I -w "HTTP_CODE: %{http_code}\nREDIRECT_URL: %{redirect_url}\n" "https://slack.com/oauth/authorize?client_id=140368165298.140370433538&scope=im:history"
+# 	#command curl -w 
+# 	#command curl "https://slack.com/api/oauth.access?client_id=140368165298.140370433538&client_secret=9c850d91fdaa9254d5cf98256a21527b&code=140368165298.141056404774.5e7e51e85b"
+	#command curl "https://slack.com/api/auth.test?token=xoxp-140368165298-141059292231-141055462534-0533141eaed3b28120403c9a460d6152"
+# 	command curl "https://slack.com/api/channels.list?token=xoxp-140368165298-141059292231-141055462534-0533141eaed3b28120403c9a460d6152&pretty=1"
+# }
+
+# if test $# -ne 0; then
+# 	print_info "boy";
+# 	call_method
+# else
+# 	print_error "No arguments passed";
+# fi;
